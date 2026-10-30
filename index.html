@@ -277,7 +277,7 @@
 <script>
 (function(){
   "use strict";
-  const VERSION = 'v0.1.0';
+  const VERSION = 'v0.1.1';
   document.getElementById('ver').textContent = VERSION;
 
   const $ = id => document.getElementById(id);
@@ -354,7 +354,7 @@
   const gTank = $('gTank');
   const waterB = el('rect', {x:G.tankL, width:G.tankR - G.tankL, fill:'#9CCBEA'}, gTank);   // 最初の水
   const waterA = el('rect', {x:G.tankL, width:G.tankR - G.tankL, fill:'#BCDDF0', id:'water'}, gTank); // 入れた水
-  const stream = el('rect', {x:G.tankL + 9, width:5, fill:'#9CCBEA', y:Y(G.Ymax) - 2}, gTank);
+  const stream = el('rect', {x:G.tankL + 16 - 2.5, width:5, fill:'#9CCBEA', y:Y(G.Ymax) - 2}, gTank);
   el('path', {d:`M${G.tankL} ${Y(G.Ymax) - 4} V${Y(0)} H${G.tankR} V${Y(G.Ymax) - 4}`, fill:'none', stroke:'#16324F', 'stroke-width':2.5}, gTank);
   // じゃ口
   el('path', {d:`M4 ${Y(G.Ymax) - 18} H${G.tankL + 16} V${Y(G.Ymax) - 8}`, fill:'none', stroke:'#16324F', 'stroke-width':6, 'stroke-linejoin':'round'}, gTank);
