@@ -165,6 +165,19 @@
   .soonbox .tag{display:inline-block; font-family:var(--mono); font-size:11px; letter-spacing:.16em; padding:3px 9px; border:1px solid var(--amber); background:var(--amber-soft); color:var(--amber-ink); border-radius:2px}
   .soonbox p{font-size:14px; line-height:1.75; color:var(--ink-soft); margin:12px 0 0}
 
+  .mchips{display:flex; gap:6px; flex-wrap:wrap}
+  td.near{background:var(--amber-soft)}
+  tr.prod td{color:var(--amber-ink); font-weight:700}
+  tr.prod td.now{color:#fff}
+  /* 分数 */
+  .fr{display:inline-flex; flex-direction:column; vertical-align:middle; text-align:center; font-size:.72em; line-height:1.1; margin:0 2px}
+  .fr > span:first-child{border-bottom:2px solid #fff; padding:0 4px 1px}
+  .fr > span:last-child{padding-top:1px}
+  /* 面積 a のえらびボタン */
+  .seg{display:flex; gap:6px; margin-top:6px}
+  .segbtn{flex:1; font-size:15px; font-family:var(--mono); font-weight:700; background:#fff; color:var(--ink); border:1.5px solid var(--line); border-radius:3px; padding:4px 6px}
+  .segbtn.active{background:var(--ink); border-color:var(--ink); color:#fff}
+
   footer{margin-top:18px; font-size:11.5px; color:var(--ink-soft); font-family:var(--mono); text-align:right}
 
   @media (min-width:900px){
@@ -188,7 +201,7 @@
   </header>
 
   <nav class="chapters" aria-label="章">
-    <button data-ch="1" class="active"><b>1</b>一次関数</button><button data-ch="2" class="soon"><b>2</b>反比例</button><button data-ch="3" class="soon"><b>3</b>動く点</button><button data-ch="4" class="soon"><b>4</b>y=ax²</button>
+    <button data-ch="1" class="active"><b>1</b>一次関数</button><button data-ch="2"><b>2</b>反比例</button><button data-ch="3" class="soon"><b>3</b>動く点</button><button data-ch="4" class="soon"><b>4</b>y=ax²</button>
   </nav>
   <div class="chq"><h2 id="chQ"></h2><p id="lead"></p></div>
 
@@ -265,7 +278,77 @@
     </div>
   </section>
 
-  <!-- ===== 章2〜4（準備中） ===== -->
+  <!-- ===== 章2：反比例 ===== -->
+  <section id="ch2" class="hidden">
+    <section class="card mission">
+      <div class="mission-head">
+        <h3>ミッション</h3>
+        <div class="mchips" id="rmchips"></div>
+      </div>
+      <div class="mbody hidden" id="rmbody">
+        <p class="mq" id="rmq"></p>
+        <p class="mset" id="rmset"></p>
+        <div class="choices" id="rmchoices"></div>
+        <div class="mactions">
+          <button class="play-btn" id="rmcheck" disabled>確かめる ▶</button>
+          <button class="tool-btn" id="rmclose">閉じる</button>
+        </div>
+        <div class="mresult hidden" id="rmresult"></div>
+      </div>
+    </section>
+
+    <div class="lab">
+      <div class="left">
+        <section class="stage" id="rstage">
+          <svg id="rscene" viewBox="0 0 360 268" role="img" aria-label="面積が決まった長方形と、そのグラフ">
+            <defs><pattern id="rtile" patternUnits="userSpaceOnUse"></pattern></defs>
+            <g id="rGrid"></g>
+            <g id="rRect"></g>
+            <g id="rGraph"></g>
+          </svg>
+          <div class="timebar">
+            <button class="play-btn" id="rPlay">▶ 横をのばす</button>
+            <button class="tool-btn" id="rReset">x = 1 に</button>
+            <span class="tv" id="rtv">x = 1 cm</span>
+          </div>
+          <div class="time-range">
+            <input type="range" id="rX" min="1" max="12" step="0.5" value="3" aria-label="横 x（cm）">
+            <div class="range-ends"><span>1cm</span><span>横 x を動かす</span><span>12cm</span></div>
+          </div>
+        </section>
+      </div>
+
+      <div class="right">
+        <section class="result">
+          <h3>式</h3>
+          <p class="formula" id="rformula"></p>
+          <p class="subst" id="rsubst"></p>
+          <p class="note" id="rnote"></p>
+        </section>
+
+        <section class="card" style="margin-top:10px">
+          <h3>表</h3>
+          <div class="tablewrap"><table id="rtbl"></table></div>
+          <p class="rate" id="rrate"></p>
+        </section>
+
+        <section class="card">
+          <h3>変えてみる</h3>
+          <div class="field">
+            <label><span><i class="sym a">a</i>長方形の面積（比例定数）</span><span class="val" id="raV"></span></label>
+            <div class="seg" id="rseg">
+              <button class="segbtn" data-a="6">6</button><button class="segbtn" data-a="12">12</button><button class="segbtn" data-a="24">24</button>
+            </div>
+          </div>
+          <div class="row-btns">
+            <button class="tool-btn" id="rGhost">くらべる線を消す</button>
+          </div>
+        </section>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 章3〜4（準備中） ===== -->
   <section id="chSoon" class="card soonbox hidden">
     <span class="tag">準備中</span>
     <p id="soonText"></p>
@@ -277,7 +360,7 @@
 <script>
 (function(){
   "use strict";
-  const VERSION = 'v0.1.1';
+  const VERSION = 'v0.2.0';
   document.getElementById('ver').textContent = VERSION;
 
   const $ = id => document.getElementById(id);
@@ -289,7 +372,8 @@
   const CHAPTER = {
     1: ['水を入れる時間と、水面の高さには、どんなきまりがある？',
         '時間 x を動かして、水面・表・式・グラフが同じ数を指しているか確かめよう。'],
-    2: ['面積が同じ長方形。たてをのばすと、横はどうなる？', ''],
+    2: ['面積が同じ長方形。横をのばすと、たてはどうなる？',
+        '横 x を動かして、長方形・表・式・グラフを見くらべよう。x × y はいつも同じ？'],
     3: ['図形の辺の上を動く点。三角形の面積はどう変わる？', ''],
     4: ['坂を転がる玉。進むきょりは、時間の何倍で増える？', '']
   };
@@ -298,16 +382,19 @@
     3: '点が長方形の辺の上を動くとき、できる三角形の面積を、折れ線のグラフで確かめる章です。',
     4: '坂を転がる玉の進むきょり y = ax² を、放物線のグラフで確かめる章です。'
   };
-  let chapter = 1;
+  let chapter = 1, R2 = null;
   function setChapter(n){
     chapter = n;
     document.querySelectorAll('.chapters button').forEach(b => b.classList.toggle('active', +b.dataset.ch === n));
     $('chQ').textContent = CHAPTER[n][0];
-    $('lead').textContent = n === 1 ? CHAPTER[n][1] : 'この章は準備中です。';
+    const ready = n <= 2;
+    $('lead').textContent = ready ? CHAPTER[n][1] : 'この章は準備中です。';
     $('ch1').classList.toggle('hidden', n !== 1);
-    $('chSoon').classList.toggle('hidden', n === 1);
+    $('ch2').classList.toggle('hidden', n !== 2);
+    $('chSoon').classList.toggle('hidden', ready);
     $('soonText').textContent = SOON[n] || '';
-    if (n !== 1) pause();
+    if (n !== 1 && S.playing) pause();
+    if (n !== 2 && R2 && R2.S.playing) R2.stop();
   }
   document.querySelectorAll('.chapters button').forEach(b => b.addEventListener('click', () => setChapter(+b.dataset.ch)));
 
@@ -584,11 +671,265 @@
   }
   $('mclose').addEventListener('click', () => { cur = -1; onEnd = null; $('mbody').classList.add('hidden'); drawChips(); });
 
+  /* ============================================================
+     章2：反比例（面積 a の長方形。横 x・たて y、 y = a / x）
+     左の長方形とグラフは、縦の目もりが同じ（1cm = 8.75px）
+     ============================================================ */
+  R2 = (function(){
+    const P = {
+      y0: 236, p: 8.75,         // y=0 の位置、1cm あたりの px（長方形もグラフの縦も同じ）
+      rectL: 14,                // 長方形の左はし
+      x0: 152, px: 16.5,        // グラフの x=0 の位置、横 1cm あたりの px
+      Xmin: 1, Xmax: 12, Ymax: 24,
+      COLS: [1, 2, 3, 4, 6, 8, 12]
+    };
+    const RY = v => P.y0 - P.p * v;
+    const RX = x => P.x0 + P.px * x;
+    const S2 = { a: 24, x: 3, lo: 3, hi: 3, playing: false, to: P.Xmax, ghost: null };
+    const yOf2 = (x, a = S2.a) => a / x;
+    const near2 = v => Math.abs(v * 100 - Math.round(v * 100)) < 1e-6;   // 小数第2位までで割り切れる？
+
+    // タイル模様（1cm × 1cm のます目）
+    const pat = $('rtile');
+    pat.setAttribute('width', P.p); pat.setAttribute('height', P.p);
+    pat.setAttribute('patternTransform', `translate(${P.rectL} ${P.y0})`);
+    el('path', {d:`M0 0 H${P.p} M0 0 V${P.p}`, stroke:'#16324F', 'stroke-opacity':.28, 'stroke-width':1, fill:'none'}, pat);
+
+    // 方眼とじく
+    const g = $('rGrid');
+    const mono = {'font-size':9.5, fill:'#5C7996', 'font-family':'Consolas,monospace'};
+    for (let v = 0; v <= P.Ymax; v += 2){
+      el('line', {x1:P.x0, x2:RX(P.Xmax), y1:RY(v), y2:RY(v), stroke: v ? '#E3ECF3' : '#16324F', 'stroke-width': v ? 1 : 1.5}, g);
+      if (v && v % 4 === 0) txt(v, {x:P.x0 - 5, y:RY(v) + 3.5, 'text-anchor':'end', ...mono}, g);
+    }
+    for (let x = 0; x <= P.Xmax; x++){
+      el('line', {x1:RX(x), x2:RX(x), y1:RY(0), y2:RY(P.Ymax), stroke: x ? '#E3ECF3' : '#16324F', 'stroke-width': x ? 1 : 1.5}, g);
+      if (x && x % 2 === 0) txt(x, {x:RX(x), y:RY(0) + 13, 'text-anchor':'middle', ...mono}, g);
+    }
+    txt('y(cm)', {x:P.x0 - 4, y:RY(P.Ymax) - 7, 'text-anchor':'middle', 'font-size':9.5, fill:'#16324F', 'font-weight':700}, g);
+    txt('x(cm)', {x:RX(P.Xmax) + 2, y:RY(0) + 26, 'text-anchor':'end', 'font-size':9.5, fill:'#16324F', 'font-weight':700}, g);
+    txt('O', {x:P.x0 - 5, y:RY(0) + 13, 'text-anchor':'end', 'font-size':9.5, fill:'#5C7996'}, g);
+    // 長方形の側の床と目もり
+    el('line', {x1:P.rectL - 4, x2:P.rectL + P.p * P.Xmax + 4, y1:RY(0), y2:RY(0), stroke:'#16324F', 'stroke-width':1.5}, g);
+    el('line', {x1:P.rectL, x2:P.rectL, y1:RY(0), y2:RY(P.Ymax), stroke:'#C6D6E3', 'stroke-width':1, 'stroke-dasharray':'2 3'}, g);
+    txt('長方形', {x:P.rectL + P.p * P.Xmax / 2, y:RY(0) + 13, 'text-anchor':'middle', 'font-size':10, fill:'#16324F', 'font-weight':700}, g);
+
+    // 長方形
+    const gr = $('rRect');
+    const rectBase = el('rect', {x:P.rectL, fill:'#FBEED6', id:'rrect'}, gr);
+    const rectTile = el('rect', {x:P.rectL, fill:'url(#rtile)'}, gr);
+    const rectEdge = el('rect', {x:P.rectL, fill:'none', stroke:'#E0982C', 'stroke-width':2}, gr);
+    const areaLbl = txt('', {'font-size':11, fill:'#B87516', 'font-weight':700, 'font-family':'Consolas,monospace'}, gr);
+
+    // グラフ
+    const gg = $('rGraph');
+    const ghost = el('path', {fill:'none', stroke:'#8AA3BA', 'stroke-width':2, 'stroke-dasharray':'5 4'}, gg);
+    const ghostLbl = txt('', {'font-size':9.5, fill:'#5C7996', 'text-anchor':'end'}, gg);
+    const area = el('rect', {x:P.x0, fill:'#E0982C', 'fill-opacity':.13, stroke:'#E0982C', 'stroke-width':1, 'stroke-dasharray':'3 3'}, gg);
+    const guideH = el('line', {stroke:'#E0982C', 'stroke-width':1.3, 'stroke-dasharray':'3 3'}, gg);
+    const trace = el('path', {fill:'none', stroke:'#16324F', 'stroke-width':3, 'stroke-linecap':'round', 'stroke-linejoin':'round', id:'rtrace'}, gg);
+    const dot = el('circle', {r:6.5, fill:'#E0982C', stroke:'#fff', 'stroke-width':2, id:'rdot'}, gg);
+    const readout = txt('', {x:RX(P.Xmax), y:RY(P.Ymax) - 7, 'text-anchor':'end', 'font-size':11, fill:'#16324F', 'font-weight':700, 'font-family':'Consolas,monospace', id:'rreadout'}, gg);
+
+    function curve(a, x1, x2){
+      x1 = Math.max(x1, a / P.Ymax);
+      if (x2 <= x1) return '';
+      let d = '';
+      const n = Math.max(2, Math.ceil((x2 - x1) / 0.05));
+      for (let i = 0; i <= n; i++){
+        const x = x1 + (x2 - x1) * i / n;
+        d += (i ? 'L' : 'M') + RX(x).toFixed(2) + ' ' + RY(a / x).toFixed(2);
+      }
+      return d;
+    }
+
+    // 表
+    const tbl = $('rtbl');
+    const rows = [['x（cm）', 'x'], ['y（cm）', 'y'], ['x × y', 'p']].map(([h, k]) => {
+      const tr = document.createElement('tr');
+      if (k === 'p') tr.className = 'prod';
+      tr.innerHTML = `<th>${h}</th>`;
+      const cells = P.COLS.map(c => { const td = document.createElement('td'); td.dataset.x = c; tr.appendChild(td); return td; });
+      tbl.appendChild(tr);
+      return cells;
+    });
+    const fracTxt = (a, x) => near2(a / x) ? fmt(a / x) : `${a}/${x}`;
+
+    function render2(){
+      const a = S2.a;
+      const x = Math.round(S2.x * 10) / 10;          // 表示は 0.1cm きざみ
+      const y = yOf2(x);
+      const w = P.p * x, h = P.p * y;
+
+      // 長方形
+      [rectBase, rectTile, rectEdge].forEach(r => { r.setAttribute('y', RY(y)); r.setAttribute('width', w); r.setAttribute('height', h); });
+      areaLbl.textContent = `${a}cm²`;
+      if (w >= 40 && h >= 16){ areaLbl.setAttribute('x', P.rectL + w / 2); areaLbl.setAttribute('y', RY(y / 2) + 4); areaLbl.setAttribute('text-anchor', 'middle'); }
+      else if (w < 40){ areaLbl.setAttribute('x', P.rectL + w + 4); areaLbl.setAttribute('y', RY(y / 2) + 4); areaLbl.setAttribute('text-anchor', 'start'); }
+      else { areaLbl.setAttribute('x', P.rectL + 2); areaLbl.setAttribute('y', RY(y) - 5); areaLbl.setAttribute('text-anchor', 'start'); }
+
+      // グラフ
+      trace.setAttribute('d', curve(a, S2.lo, S2.hi));
+      area.setAttribute('y', RY(y)); area.setAttribute('width', P.px * x); area.setAttribute('height', h);
+      dot.setAttribute('cx', RX(x)); dot.setAttribute('cy', RY(y));
+      guideH.setAttribute('x1', P.rectL + w); guideH.setAttribute('x2', RX(x));
+      guideH.setAttribute('y1', RY(y)); guideH.setAttribute('y2', RY(y));
+      readout.textContent = `x=${fmtT(x)}  y=${fmt(y)}`;
+      if (S2.ghost){
+        ghost.setAttribute('d', curve(S2.ghost, P.Xmin, P.Xmax));
+        ghostLbl.textContent = `前：y=${S2.ghost}/x`;
+        ghostLbl.setAttribute('x', RX(P.Xmax) - 2);
+        ghostLbl.setAttribute('y', RY(S2.ghost / P.Xmax) - 6);
+        ghost.style.display = ghostLbl.style.display = '';
+      } else ghost.style.display = ghostLbl.style.display = 'none';
+
+      // 表
+      let exact = P.COLS.indexOf(x), between = -1;
+      if (exact < 0) between = P.COLS.findIndex((c, i) => c < x && x < P.COLS[i + 1]);
+      P.COLS.forEach((c, i) => {
+        rows[0][i].textContent = c;
+        rows[1][i].textContent = fracTxt(a, c);
+        rows[2][i].textContent = a;
+        rows.forEach(r => {
+          r[i].classList.toggle('now', i === exact);
+          r[i].classList.toggle('near', between >= 0 && (i === between || i === between + 1));
+        });
+      });
+      $('rrate').innerHTML = `x が 2倍・3倍になると、y は 1/2倍・1/3倍。x × y は いつも <b>${a}</b>（比例定数 a）`;
+
+      // 式
+      const approx = !near2(y);
+      $('rformula').innerHTML = `y = <span class="fr"><span class="ca" id="ra">${a}</span><span>x</span></span>`;
+      $('rsubst').innerHTML = `x = ${fmtT(x)} のとき<br>y = <span class="ca">${a}</span> ÷ ${fmtT(x)} ${approx ? '≒' : '='} <span class="y" id="ryNow">${fmt(y)}</span>` +
+        `<br>x × y = ${fmtT(x)} × ${approx ? fracTxt(a, fmtT(x)) : fmt(y)} = <span class="ca" id="rprod">${a}</span>`;
+      $('rnote').innerHTML = `<span class="tagp">反比例</span>長方形の面積はいつも ${a}cm²。だから横 x が大きくなると、たて y は小さくなります。`;
+
+      $('rtv').textContent = `x = ${fmtT(x)} cm`;
+      $('rX').value = S2.x;
+      $('raV').innerHTML = `<span style="color:#B87516">${a}</span> cm²`;
+      document.querySelectorAll('#rseg .segbtn').forEach(b => b.classList.toggle('active', +b.dataset.a === a));
+      $('rPlay').textContent = S2.playing ? '❚❚ とめる' : '▶ 横をのばす';
+      $('rGhost').disabled = !S2.ghost;
+    }
+
+    // 動かす
+    let last = 0, onEnd = null;
+    const SPEED = 2.2;   // 1秒で何cm のびるか
+    function go(to){
+      S2.to = to; S2.playing = true; last = performance.now();
+      requestAnimationFrame(step); render2();
+    }
+    function stop(){ S2.playing = false; render2(); }
+    function step(now){
+      if (!S2.playing) return;
+      const dt = Math.min(0.1, (now - last) / 1000); last = now;
+      const dir = Math.sign(S2.to - S2.x);
+      S2.x = dir > 0 ? Math.min(S2.to, S2.x + dt * SPEED) : Math.max(S2.to, S2.x - dt * SPEED);
+      S2.lo = Math.min(S2.lo, S2.x); S2.hi = Math.max(S2.hi, S2.x);
+      if (S2.x === S2.to){ S2.playing = false; render2(); if (onEnd){ const f = onEnd; onEnd = null; f(); } return; }
+      render2(); requestAnimationFrame(step);
+    }
+    $('rPlay').addEventListener('click', () => {
+      if (S2.playing) return stop();
+      if (S2.x >= P.Xmax){ S2.x = P.Xmin; S2.lo = Math.min(S2.lo, S2.x); }
+      go(P.Xmax);
+    });
+    $('rReset').addEventListener('click', () => { S2.playing = false; onEnd = null; S2.x = P.Xmin; S2.lo = Math.min(S2.lo, 1); render2(); });
+    $('rX').addEventListener('input', e => {
+      S2.playing = false; onEnd = null; S2.x = +e.target.value;
+      S2.lo = Math.min(S2.lo, S2.x); S2.hi = Math.max(S2.hi, S2.x); render2();
+    });
+    function setA(a){
+      if (a === S2.a) return;
+      S2.ghost = S2.a; S2.a = a; S2.lo = S2.hi = S2.x; render2();
+    }
+    document.querySelectorAll('#rseg .segbtn').forEach(b => b.addEventListener('click', () => setA(+b.dataset.a)));
+    $('rGhost').addEventListener('click', () => { S2.ghost = null; render2(); });
+
+    // ミッション
+    const MS = [
+      { q: '横を 2倍にすると、たてはどうなる？',
+        base: {a: 24, x: 3, lo: 3, hi: 3}, set: '面積 24cm² の長方形。いまは横 3cm、たて 8cm です。横を 3 → 6cm にのばします。',
+        choices: ['たても 2倍になる', 'たては 1/2倍になる', 'たては変わらない'], answer: 1,
+        run(){ go(6); },
+        explain: '横 3 → 6（2倍）で、たては 8 → 4（1/2倍）。面積 x × y＝24 は変わらないので、一方が 2倍になると、もう一方は 1/2倍になります。これが「反比例」です。' },
+      { q: '面積を 24 → 12 にすると、グラフはどうなる？',
+        base: {a: 24, x: 12, lo: 1, hi: 12}, set: 'いまのグラフは y = 24/x です。面積を半分の 12cm² にして、横を 1cm からのばします。',
+        choices: ['原点 O のほうへ近づく（内側）', '外側へ広がる', 'まっすぐな線になる'], answer: 0,
+        run(){ S2.ghost = 24; S2.a = 12; S2.x = 1; S2.lo = S2.hi = 1; go(12); },
+        explain: '面積が半分なので、同じ x でも y は半分になります。だから曲線は原点 O のほうへ寄ります。a が大きいほど外側、小さいほど内側です。' },
+      { q: 'x をどんどん大きくすると、y はいつか 0 になる？',
+        base: {a: 24, x: 1, lo: 1, hi: 1}, set: '面積 24cm² の長方形の横を、1cm から 12cm までのばします。',
+        choices: ['いつか 0 になる', '0 に近づくが、0 にはならない', 'マイナスになる'], answer: 1,
+        run(){ go(12); },
+        explain: 'x＝12 で y＝2、x＝24 なら y＝1、x＝240 なら y＝0.1…。x × y＝24 なので、y が 0 になることはありません。グラフは x じくに近づくけれど、交わりません。' }
+    ];
+    const done = new Set();
+    let cur = -1, picked = -1;
+    function chips(){
+      $('rmchips').innerHTML = '';
+      MS.forEach((m, i) => {
+        const bt = document.createElement('button');
+        bt.className = 'mchip' + (i === cur ? ' active' : '') + (done.has(i) ? ' done' : '');
+        bt.textContent = '①②③④⑤'[i];
+        bt.setAttribute('aria-label', 'ミッション' + (i + 1));
+        bt.addEventListener('click', () => open(i));
+        $('rmchips').appendChild(bt);
+      });
+    }
+    function open(i){
+      cur = i; picked = -1; onEnd = null; S2.playing = false;
+      const m = MS[i];
+      Object.assign(S2, m.base, {ghost: null});
+      $('rmbody').classList.remove('hidden');
+      $('rmq').textContent = m.q;
+      $('rmset').textContent = m.set + ' まず予想をえらぼう。';
+      $('rmresult').classList.add('hidden');
+      $('rmcheck').disabled = true;
+      $('rmchoices').innerHTML = '';
+      m.choices.forEach((c, k) => {
+        const bt = document.createElement('button');
+        bt.className = 'choice'; bt.textContent = 'ABC'[k] + '　' + c;
+        bt.addEventListener('click', () => {
+          picked = k;
+          [...$('rmchoices').children].forEach((x, j) => x.classList.toggle('picked', j === k));
+          $('rmcheck').disabled = false;
+        });
+        $('rmchoices').appendChild(bt);
+      });
+      chips(); render2();
+    }
+    $('rmcheck').addEventListener('click', () => {
+      if (picked < 0) return;
+      const m = MS[cur];
+      [...$('rmchoices').children].forEach(x => x.disabled = true);
+      $('rmcheck').disabled = true;
+      onEnd = showResult;
+      m.run();
+      $('rstage').scrollIntoView({behavior: 'smooth', block: 'nearest'});
+    });
+    function showResult(){
+      const m = MS[cur], ok = picked === m.answer;
+      [...$('rmchoices').children].forEach((x, j) => x.classList.toggle('right', j === m.answer));
+      done.add(cur); chips();
+      const r = $('rmresult');
+      r.innerHTML = `<b>${ok ? '予想どおり！' : '予想とちがった！'}</b>　答えは ${'ABC'[m.answer]}。<br>${m.explain}`;
+      r.classList.remove('hidden');
+    }
+    $('rmclose').addEventListener('click', () => { cur = -1; onEnd = null; $('rmbody').classList.add('hidden'); chips(); });
+
+    chips(); render2();
+    return {
+      P, S: S2, stop, open,
+      set(o){ S2.playing = false; onEnd = null; Object.assign(S2, o); render2(); }
+    };
+  })();
+
   /* ---------- テスト用の窓口 ---------- */
   window.__FL = {
     VERSION, G, S,
     set(o){ S.playing = false; Object.assign(S, o); committed = {a: S.a, b: S.b}; render(); },
-    openMission, setChapter
+    openMission, setChapter, ch2: R2
   };
 
   drawChips();

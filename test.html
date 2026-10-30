@@ -56,6 +56,35 @@ document.getElementById('f').addEventListener('load', () => {
     finish();
   }, 3000);
   function finish(){
+  // ===== 章2：反比例 =====
+  FL.setChapter(2);
+  const R = FL.ch2, P = R.P;
+  ok(!d.getElementById('ch2').classList.contains('hidden') && d.getElementById('ch1').classList.contains('hidden'), '章2が開く');
+  for (const a of [6, 12, 24]) for (const x of [1, 1.5, 2, 3, 5, 6, 7.5, 8, 11, 12]){
+    R.set({a, x, lo: 1, hi: 12, ghost: null});
+    const y = a / x, tag = '章2 ' + JSON.stringify({a, x});
+    ok(+d.getElementById('ra').textContent === a, tag + ' 式のa');
+    ok(near(num(d.getElementById('ryNow').textContent), y, 0.006), tag + ' 代入した y');
+    ok(+d.getElementById('rprod').textContent === a, tag + ' x×y');
+    const rr = d.getElementById('rrect');
+    ok(near(+rr.getAttribute('width') / P.p, x) && near(+rr.getAttribute('height') / P.p, y), tag + ' 長方形のたて横');
+    ok(near(x * (+rr.getAttribute('height') / P.p), a), tag + ' 長方形の面積＝a');
+    const dt = d.getElementById('rdot');
+    ok(near((+dt.getAttribute('cx') - P.x0) / P.px, x) && near((P.y0 - +dt.getAttribute('cy')) / P.p, y), tag + ' グラフの点');
+    ok(near(+dt.getAttribute('cy'), +rr.getAttribute('y')), tag + ' 長方形の上の辺とグラフの点が同じ高さ');
+    const nowCells = d.querySelectorAll('#rtbl td.now');
+    if (P.COLS.includes(x)) ok(nowCells.length === 3 && +nowCells[0].textContent === x && near(num(eval(nowCells[1].textContent)), y), tag + ' 表の光る列');
+    else ok(nowCells.length === 0 && d.querySelectorAll('#rtbl td.near').length === 6, tag + ' 表の間の列');
+    d.querySelectorAll('#rtbl tr:nth-child(2) td').forEach((td, i) => ok(near(eval(td.textContent), a / P.COLS[i]), tag + ' 表 y'));
+    d.querySelectorAll('#rtbl tr.prod td').forEach(td => ok(+td.textContent === a, tag + ' 表 x×y'));
+    const ro = d.getElementById('rreadout').textContent.match(/x=([\d.]+)\s+y=([\d.]+)/);
+    ok(ro && near(+ro[1], x) && near(+ro[2], y, 0.006), tag + ' グラフの数値表示');
+  }
+  R.open(1);
+  d.querySelector('#rmchoices .choice').click();
+  d.getElementById('rmcheck').click();
+  ok(R.S.a === 12 && R.S.ghost === 24, '章2 ミッション②の切り替え');
+  FL.setChapter(1);
   // 準備中の章
   FL.setChapter(3);
   ok(d.getElementById('ch1').classList.contains('hidden') && !d.getElementById('chSoon').classList.contains('hidden'), '章3は準備中');
