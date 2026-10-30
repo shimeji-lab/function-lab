@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="関数LAB">
+<meta name="theme-color" content="#16324F">
+<link rel="icon" href="https://shimeji-lab.github.io/manabi-lab/favicon.svg?v=1" type="image/svg+xml">
+<link rel="icon" href="https://shimeji-lab.github.io/manabi-lab/favicon-32.png?v=1" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="https://shimeji-lab.github.io/manabi-lab/apple-touch-icon.png?v=1">
+<title>関数LAB</title>
+<style>
+  :root{
+    --ink:#16324F;
+    --ink-soft:#5C7996;
+    --paper:#F7FAFC;
+    --grid:#DFE9F1;
+    --line:#C6D6E3;
+    --amber:#E0982C;
+    --amber-ink:#B87516;
+    --amber-soft:#FBEED6;
+    --blue:#2F7BB0;
+    --blue-soft:#BCDDF0;
+    --card:#FFFFFF;
+    --ok:#2E8B57;
+    --mono: ui-monospace, "SF Mono", Consolas, "Courier New", monospace;
+    --gothic: "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", system-ui, sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  button{touch-action:manipulation; min-height:44px; font-family:var(--gothic); cursor:pointer}
+  button:focus-visible, input:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+  body{
+    margin:0;
+    padding:16px calc(16px + env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));
+    -webkit-tap-highlight-color:transparent;
+    font-family:var(--gothic); color:var(--ink);
+    background-color:var(--paper);
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size:24px 24px;
+  }
+  .app{max-width:1080px; margin:0 auto}
+  .hidden{display:none !important}
+
+  .back{display:inline-block; font-size:13px; color:var(--ink-soft); text-decoration:none; margin-bottom:8px}
+  .back:hover{color:var(--ink); text-decoration:underline}
+  header{margin-bottom:10px; border-bottom:2.5px solid var(--ink); padding-bottom:10px}
+  h1{font-size:25.5px; margin:0; letter-spacing:.08em; font-weight:700}
+  h1 span{display:block; font-family:var(--mono); font-size:11.5px; letter-spacing:.24em; color:var(--ink-soft); font-weight:400; margin-top:4px}
+
+  /* 章タブ（1段） */
+  .chapters{display:flex; gap:6px; margin:12px 0 10px; max-width:640px}
+  .chapters button{
+    flex:1; min-width:0; border:1.5px solid var(--line); background:#fff; border-radius:3px;
+    padding:5px 2px 7px; color:var(--ink-soft); font-size:12px; font-weight:700; line-height:1.3; min-height:50px;
+  }
+  .chapters button b{display:block; font-family:var(--mono); font-size:16px}
+  .chapters button.active{background:var(--ink); border-color:var(--ink); color:#fff}
+  .chapters button.soon{border-style:dashed}
+  .chq{margin:0 0 12px}
+  .chq h2{font-size:18px; margin:0; letter-spacing:.03em; line-height:1.45}
+  .chq p{font-size:13px; color:var(--ink-soft); margin:4px 0 0; line-height:1.6}
+
+  .card{background:var(--card); border:1.5px solid var(--line); border-radius:3px; padding:12px 14px}
+  .card + .card{margin-top:10px}
+  .card h3{font-size:13px; margin:0 0 6px; letter-spacing:.14em; color:var(--ink-soft); font-weight:700}
+
+  /* ミッション */
+  .mission{border-color:var(--amber); background:#fff}
+  .mission-head{display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+  .mission-head h3{margin:0 4px 0 0; color:var(--amber-ink)}
+  .mchip{
+    min-height:38px; min-width:44px; padding:4px 10px; font-size:13px; font-weight:700;
+    background:#fff; color:var(--ink); border:1.5px solid var(--line); border-radius:3px;
+  }
+  .mchip.active{background:var(--ink); border-color:var(--ink); color:#fff}
+  .mchip.done::after{content:" ✓"; color:var(--ok)}
+  .mchip.active.done::after{color:#9FE0B9}
+  .mbody{margin-top:10px; border-top:1px solid var(--line); padding-top:10px}
+  .mq{font-size:15.5px; font-weight:700; margin:0; line-height:1.55}
+  .mset{font-size:12.5px; color:var(--ink-soft); margin:4px 0 8px; line-height:1.6}
+  .choices{display:grid; gap:6px}
+  .choice{
+    text-align:left; font-size:14px; padding:8px 12px; background:#fff; color:var(--ink);
+    border:1.5px solid var(--line); border-radius:3px; line-height:1.45;
+  }
+  .choice.picked{background:var(--ink); border-color:var(--ink); color:#fff}
+  .choice.right{border-color:var(--ok); box-shadow:inset 4px 0 0 var(--ok)}
+  .choice:disabled{cursor:default}
+  .mactions{display:flex; gap:8px; margin-top:8px; flex-wrap:wrap}
+  .mresult{margin:10px 0 0; font-size:13.5px; line-height:1.7; padding:8px 12px; border-radius:3px; background:var(--amber-soft); border:1.5px solid var(--amber)}
+  .mresult b{font-size:14.5px}
+
+  .play-btn{
+    font-size:15px; padding:6px 18px; background:var(--amber-soft); color:var(--ink);
+    border:1.5px solid var(--amber); border-radius:3px; font-weight:700;
+  }
+  .play-btn:hover{background:var(--amber); color:#fff}
+  .play-btn:disabled{opacity:.45; cursor:default; background:var(--amber-soft); color:var(--ink)}
+  .tool-btn{font-size:14px; padding:6px 12px; background:#fff; border:1.5px solid var(--line); border-radius:3px; color:var(--ink)}
+  .tool-btn:hover{border-color:var(--ink)}
+
+  /* レイアウト */
+  .lab{display:grid; gap:10px; margin-top:10px}
+  .stage{background:var(--card); border:1.5px solid var(--ink); border-radius:3px; padding:6px}
+  svg{display:block; width:100%; height:auto}
+  .timebar{display:flex; align-items:center; gap:8px; margin-top:6px; padding:0 4px}
+  .timebar .play-btn{flex:0 0 auto; min-width:92px}
+  .timebar .tool-btn{flex:0 0 auto}
+  .timebar .tv{margin-left:auto; font-family:var(--mono); font-size:17px; white-space:nowrap}
+
+  input[type=range]{
+    width:100%; margin:2px 0 0; height:36px; background:transparent;
+    -webkit-appearance:none; appearance:none; touch-action:pan-y;
+  }
+  input[type=range]::-webkit-slider-runnable-track{height:8px; border-radius:4px; background:#E6EFF5; border:1px solid var(--line)}
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none; width:30px; height:30px; margin-top:-12px; border-radius:50%;
+    background:#1B6FA8; border:2.5px solid #fff; box-shadow:0 1px 4px rgba(22,50,79,.35);
+  }
+  input[type=range]::-moz-range-track{height:8px; border-radius:4px; background:#E6EFF5; border:1px solid var(--line)}
+  input[type=range]::-moz-range-thumb{width:26px; height:26px; border:2.5px solid #fff; border-radius:50%; background:#1B6FA8}
+  input.amber::-webkit-slider-thumb{background:var(--amber)}
+  input.amber::-moz-range-thumb{background:var(--amber)}
+  input.blue::-webkit-slider-thumb{background:var(--blue)}
+  input.blue::-moz-range-thumb{background:var(--blue)}
+  .range-ends{display:flex; justify-content:space-between; font-family:var(--mono); font-size:10.5px; color:var(--ink-soft)}
+  .time-range{padding:0 4px}
+
+  /* 式 */
+  .result{background:var(--ink); color:#fff; border-radius:3px; padding:12px 14px}
+  .result h3{font-size:12.5px; letter-spacing:.14em; color:#9FBBD4; margin:0 0 4px; font-weight:400}
+  .formula{font-family:var(--mono); font-size:26px; font-weight:700; margin:0; letter-spacing:.02em}
+  .ca{color:#F2B65A}
+  .cb{color:#8FC8EE}
+  .subst{font-family:var(--mono); font-size:14.5px; color:#D6E5F2; margin:6px 0 0; line-height:1.7; word-break:break-all}
+  .subst .y{color:#fff; font-weight:700}
+  .note{font-size:12.5px; color:#D6E5F2; line-height:1.7; margin:8px 0 0; border-top:1px solid #35577A; padding-top:7px}
+  .note .tagp{display:inline-block; font-size:11px; padding:1px 7px; border:1px solid #8FC8EE; color:#8FC8EE; border-radius:2px; margin-right:4px}
+
+  /* 表 */
+  .tablewrap{overflow-x:auto; -webkit-overflow-scrolling:touch}
+  table{border-collapse:collapse; font-family:var(--mono); font-size:12.5px; width:100%; min-width:320px}
+  th, td{border:1px solid var(--line); padding:5px 2px; text-align:center; min-width:24px; transition:background .15s, color .15s, opacity .15s}
+  th{font-family:var(--gothic); font-size:11px; color:var(--ink-soft); font-weight:700; background:#F1F6FA; white-space:nowrap; padding:5px 4px}
+  td.future{opacity:.35}
+  td.now{background:var(--amber); color:#fff; font-weight:700; border-color:var(--amber)}
+  .rate{font-size:12.5px; color:var(--ink-soft); margin:6px 0 0}
+  .rate b{color:var(--amber-ink); font-family:var(--mono)}
+
+  /* 変える */
+  .field label{display:flex; justify-content:space-between; align-items:center; font-size:13.5px; color:var(--ink); gap:8px}
+  .field .val{font-family:var(--mono); font-size:19px; font-weight:700; white-space:nowrap}
+  .field + .field{margin-top:6px}
+  .sym{display:inline-block; font-family:var(--mono); font-weight:700; padding:0 6px; border-radius:2px; color:#fff; margin-right:4px}
+  .sym.a{background:var(--amber)}
+  .sym.b{background:var(--blue)}
+  .row-btns{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px}
+
+  .soonbox{text-align:center; padding:28px 16px; border-style:dashed}
+  .soonbox .tag{display:inline-block; font-family:var(--mono); font-size:11px; letter-spacing:.16em; padding:3px 9px; border:1px solid var(--amber); background:var(--amber-soft); color:var(--amber-ink); border-radius:2px}
+  .soonbox p{font-size:14px; line-height:1.75; color:var(--ink-soft); margin:12px 0 0}
+
+  footer{margin-top:18px; font-size:11.5px; color:var(--ink-soft); font-family:var(--mono); text-align:right}
+
+  @media (min-width:900px){
+    .lab{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); align-items:start}
+    .lab .left{position:sticky; top:12px}
+    .formula{font-size:30px}
+  }
+  @media (max-width:400px){
+    .chapters button{font-size:11px}
+    .chq h2{font-size:16.5px}
+    h1{font-size:23px}
+    .formula{font-size:23px}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <a class="back" href="https://shimeji-lab.github.io/manabi-lab/">← まなびラボ</a>
+  <header>
+    <h1>関数LAB<span>FUNCTION LAB</span></h1>
+  </header>
+
+  <nav class="chapters" aria-label="章">
+    <button data-ch="1" class="active"><b>1</b>一次関数</button><button data-ch="2" class="soon"><b>2</b>反比例</button><button data-ch="3" class="soon"><b>3</b>動く点</button><button data-ch="4" class="soon"><b>4</b>y=ax²</button>
+  </nav>
+  <div class="chq"><h2 id="chQ"></h2><p id="lead"></p></div>
+
+  <!-- ===== 章1 ===== -->
+  <section id="ch1">
+    <section class="card mission" id="missionCard">
+      <div class="mission-head">
+        <h3>ミッション</h3>
+        <div id="mchips" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+      </div>
+      <div class="mbody hidden" id="mbody">
+        <p class="mq" id="mq"></p>
+        <p class="mset" id="mset"></p>
+        <div class="choices" id="mchoices"></div>
+        <div class="mactions">
+          <button class="play-btn" id="mcheck" disabled>確かめる ▶</button>
+          <button class="tool-btn" id="mclose">閉じる</button>
+        </div>
+        <div class="mresult hidden" id="mresult"></div>
+      </div>
+    </section>
+
+    <div class="lab">
+      <div class="left">
+        <section class="stage">
+          <svg id="scene" viewBox="0 0 360 268" role="img" aria-label="水そうの水面の高さと、そのグラフ">
+            <g id="gGrid"></g>
+            <g id="gTank"></g>
+            <g id="gGraph"></g>
+          </svg>
+          <div class="timebar">
+            <button class="play-btn" id="btnPlay">▶ 再生</button>
+            <button class="tool-btn" id="btnReset">最初から</button>
+            <span class="tv" id="tv">x = 0 分</span>
+          </div>
+          <div class="time-range">
+            <input type="range" id="tR" min="0" max="10" step="0.1" value="0" aria-label="時間 x（分）">
+            <div class="range-ends"><span>0分</span><span>時間 x を動かす</span><span>10分</span></div>
+          </div>
+        </section>
+      </div>
+
+      <div class="right">
+        <section class="result">
+          <h3>式</h3>
+          <p class="formula" id="formula"></p>
+          <p class="subst" id="subst"></p>
+          <p class="note" id="fnote"></p>
+        </section>
+
+        <section class="card" style="margin-top:10px">
+          <h3>表</h3>
+          <div class="tablewrap"><table id="tbl"></table></div>
+          <p class="rate" id="rate"></p>
+        </section>
+
+        <section class="card">
+          <h3>変えてみる</h3>
+          <div class="field">
+            <label for="aR"><span><i class="sym a">a</i>1分で上がる高さ（かたむき）</span><span class="val ca2" id="aV"></span></label>
+            <input type="range" class="amber" id="aR" min="0.5" max="5" step="0.5" value="2">
+            <div class="range-ends"><span>0.5</span><span>5</span></div>
+          </div>
+          <div class="field">
+            <label for="bR"><span><i class="sym b">b</i>最初から入っている水（切片）</span><span class="val" id="bV"></span></label>
+            <input type="range" class="blue" id="bR" min="0" max="20" step="1" value="6">
+            <div class="range-ends"><span>0</span><span>20</span></div>
+          </div>
+          <div class="row-btns">
+            <button class="tool-btn" id="btnGhost">くらべる線を消す</button>
+          </div>
+        </section>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 章2〜4（準備中） ===== -->
+  <section id="chSoon" class="card soonbox hidden">
+    <span class="tag">準備中</span>
+    <p id="soonText"></p>
+  </section>
+
+  <footer>関数LAB <span id="ver"></span></footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const VERSION = 'v0.1.0';
+  document.getElementById('ver').textContent = VERSION;
+
+  const $ = id => document.getElementById(id);
+  const NS = 'http://www.w3.org/2000/svg';
+  const fmt = v => String(+(+v).toFixed(2));          // 3.50 → "3.5"
+  const fmtT = v => String(+(+v).toFixed(1));
+
+  /* ---------- 章 ---------- */
+  const CHAPTER = {
+    1: ['水を入れる時間と、水面の高さには、どんなきまりがある？',
+        '時間 x を動かして、水面・表・式・グラフが同じ数を指しているか確かめよう。'],
+    2: ['面積が同じ長方形。たてをのばすと、横はどうなる？', ''],
+    3: ['図形の辺の上を動く点。三角形の面積はどう変わる？', ''],
+    4: ['坂を転がる玉。進むきょりは、時間の何倍で増える？', '']
+  };
+  const SOON = {
+    2: '反比例 y = a/x を、面積が決まった長方形の形を変えて確かめる章です。',
+    3: '点が長方形の辺の上を動くとき、できる三角形の面積を、折れ線のグラフで確かめる章です。',
+    4: '坂を転がる玉の進むきょり y = ax² を、放物線のグラフで確かめる章です。'
+  };
+  let chapter = 1;
+  function setChapter(n){
+    chapter = n;
+    document.querySelectorAll('.chapters button').forEach(b => b.classList.toggle('active', +b.dataset.ch === n));
+    $('chQ').textContent = CHAPTER[n][0];
+    $('lead').textContent = n === 1 ? CHAPTER[n][1] : 'この章は準備中です。';
+    $('ch1').classList.toggle('hidden', n !== 1);
+    $('chSoon').classList.toggle('hidden', n === 1);
+    $('soonText').textContent = SOON[n] || '';
+    if (n !== 1) pause();
+  }
+  document.querySelectorAll('.chapters button').forEach(b => b.addEventListener('click', () => setChapter(+b.dataset.ch)));
+
+  /* ---------- 座標（水そうとグラフは同じ縦の目もり：1cm = 3px） ---------- */
+  const G = {
+    y0: 236, py: 3,          // y=0 の位置、1cmあたりのpx
+    x0: 134, px: 20,         // グラフの x=0 の位置、1分あたりのpx
+    tankL: 22, tankR: 92,
+    Ymax: 70, Xmax: 10
+  };
+  const Y = v => G.y0 - G.py * v;
+  const X = t => G.x0 + G.px * t;
+
+  /* ---------- 状態 ---------- */
+  const S = { a: 2, b: 6, t: 0, playing: false, ghost: null };
+  const yOf = (t, a = S.a, b = S.b) => a * t + b;
+
+  /* ---------- SVG 部品 ---------- */
+  function el(tag, attrs, parent){
+    const e = document.createElementNS(NS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  function txt(s, attrs, parent){ const e = el('text', attrs, parent); e.textContent = s; return e; }
+
+  // 方眼とじく
+  const gGrid = $('gGrid');
+  for (let v = 0; v <= G.Ymax; v += 10){
+    el('line', {x1:G.x0, x2:X(G.Xmax), y1:Y(v), y2:Y(v), stroke: v ? '#E3ECF3' : '#16324F', 'stroke-width': v ? 1 : 1.5}, gGrid);
+    if (v) txt(v, {x:G.x0 - 5, y:Y(v) + 3.5, 'text-anchor':'end', 'font-size':9.5, fill:'#5C7996', 'font-family':'Consolas,monospace'}, gGrid);
+    // 水そうの目もり
+    el('line', {x1:G.tankR, x2:G.tankR - 6, y1:Y(v), y2:Y(v), stroke:'#16324F', 'stroke-width':1}, gGrid);
+  }
+  for (let t = 0; t <= G.Xmax; t++){
+    el('line', {x1:X(t), x2:X(t), y1:Y(0), y2:Y(G.Ymax), stroke: t ? '#E3ECF3' : '#16324F', 'stroke-width': t ? 1 : 1.5}, gGrid);
+    if (t && t % 2 === 0) txt(t, {x:X(t), y:Y(0) + 13, 'text-anchor':'middle', 'font-size':9.5, fill:'#5C7996', 'font-family':'Consolas,monospace'}, gGrid);
+  }
+  txt('y(cm)', {x:G.x0 - 4, y:Y(G.Ymax) - 7, 'text-anchor':'middle', 'font-size':9.5, fill:'#16324F', 'font-weight':700}, gGrid);
+  txt('x(分)', {x:X(G.Xmax) + 2, y:Y(0) + 26, 'text-anchor':'end', 'font-size':9.5, fill:'#16324F', 'font-weight':700}, gGrid);
+  txt('O', {x:G.x0 - 5, y:Y(0) + 13, 'text-anchor':'end', 'font-size':9.5, fill:'#5C7996'}, gGrid);
+
+  // 水そう
+  const gTank = $('gTank');
+  const waterB = el('rect', {x:G.tankL, width:G.tankR - G.tankL, fill:'#9CCBEA'}, gTank);   // 最初の水
+  const waterA = el('rect', {x:G.tankL, width:G.tankR - G.tankL, fill:'#BCDDF0', id:'water'}, gTank); // 入れた水
+  const stream = el('rect', {x:G.tankL + 9, width:5, fill:'#9CCBEA', y:Y(G.Ymax) - 2}, gTank);
+  el('path', {d:`M${G.tankL} ${Y(G.Ymax) - 4} V${Y(0)} H${G.tankR} V${Y(G.Ymax) - 4}`, fill:'none', stroke:'#16324F', 'stroke-width':2.5}, gTank);
+  // じゃ口
+  el('path', {d:`M4 ${Y(G.Ymax) - 18} H${G.tankL + 16} V${Y(G.Ymax) - 8}`, fill:'none', stroke:'#16324F', 'stroke-width':6, 'stroke-linejoin':'round'}, gTank);
+  el('path', {d:`M4 ${Y(G.Ymax) - 18} H${G.tankL + 16} V${Y(G.Ymax) - 8}`, fill:'none', stroke:'#C6D6E3', 'stroke-width':3, 'stroke-linejoin':'round'}, gTank);
+  const bLine = el('line', {x1:G.tankL, x2:G.tankR, stroke:'#2F7BB0', 'stroke-width':1.5, 'stroke-dasharray':'4 3'}, gTank);
+  const bLbl = txt('b', {x:G.tankL + 4, 'font-size':10, fill:'#2F7BB0', 'font-weight':700, 'font-family':'Consolas,monospace'}, gTank);
+  txt('水そう', {x:(G.tankL + G.tankR) / 2, y:Y(0) + 13, 'text-anchor':'middle', 'font-size':10, fill:'#16324F', 'font-weight':700}, gTank);
+
+  // グラフ
+  const gGraph = $('gGraph');
+  const ghostLine = el('line', {stroke:'#8AA3BA', 'stroke-width':2, 'stroke-dasharray':'5 4', fill:'none'}, gGraph);
+  const ghostLbl = txt('', {'font-size':9.5, fill:'#5C7996'}, gGraph);
+  const guideH = el('line', {stroke:'#E0982C', 'stroke-width':1.3, 'stroke-dasharray':'3 3'}, gGraph);  // 水面 → 点
+  const guideV = el('line', {stroke:'#E0982C', 'stroke-width':1.3, 'stroke-dasharray':'3 3'}, gGraph);  // 点 → x軸
+  const slopeTri = el('path', {fill:'none', stroke:'#E0982C', 'stroke-width':1.6}, gGraph);
+  const slopeLbl = txt('', {'font-size':10, fill:'#B87516', 'font-weight':700, 'font-family':'Consolas,monospace'}, gGraph);
+  const line = el('line', {stroke:'#16324F', 'stroke-width':3, 'stroke-linecap':'round', id:'line'}, gGraph);
+  const bDot = el('circle', {r:4, fill:'#2F7BB0', stroke:'#fff', 'stroke-width':1.5, cx:G.x0}, gGraph);
+  const dot = el('circle', {r:6.5, fill:'#E0982C', stroke:'#fff', 'stroke-width':2, id:'dot'}, gGraph);
+  const readout = txt('', {x:X(G.Xmax), y:Y(G.Ymax) - 7, 'text-anchor':'end', 'font-size':11, fill:'#16324F', 'font-weight':700, 'font-family':'Consolas,monospace', id:'readout'}, gGraph);
+
+  /* ---------- 表 ---------- */
+  const tbl = $('tbl');
+  const trX = document.createElement('tr'), trY = document.createElement('tr');
+  trX.innerHTML = '<th>x（分）</th>'; trY.innerHTML = '<th>y（cm）</th>';
+  const cellsX = [], cellsY = [];
+  for (let x = 0; x <= G.Xmax; x++){
+    const cx = document.createElement('td'); cx.textContent = x; trX.appendChild(cx); cellsX.push(cx);
+    const cy = document.createElement('td'); cy.dataset.x = x; trY.appendChild(cy); cellsY.push(cy);
+  }
+  tbl.appendChild(trX); tbl.appendChild(trY);
+
+  /* ---------- 描画 ---------- */
+  function render(){
+    const {a, b} = S;
+    const t = Math.round(S.t * 10) / 10;   // 表示する時間は 0.1分きざみにそろえる
+    const y = yOf(t);
+
+    // 水そう
+    waterB.setAttribute('y', Y(b)); waterB.setAttribute('height', G.py * b);
+    waterA.setAttribute('y', Y(y)); waterA.setAttribute('height', G.py * (y - b));
+    bLine.setAttribute('y1', Y(b)); bLine.setAttribute('y2', Y(b));
+    bLbl.setAttribute('y', Y(b) + 11); bLbl.style.display = b >= 4 ? '' : 'none';
+    const flowing = S.playing && t < G.Xmax;
+    stream.setAttribute('height', Math.max(0, Y(y) - (Y(G.Ymax) - 8)));
+    stream.setAttribute('y', Y(G.Ymax) - 8);
+    stream.style.display = flowing ? '' : 'none';
+
+    // グラフ
+    line.setAttribute('x1', X(0)); line.setAttribute('y1', Y(b));
+    line.setAttribute('x2', X(t)); line.setAttribute('y2', Y(y));
+    bDot.setAttribute('cy', Y(b));
+    dot.setAttribute('cx', X(t)); dot.setAttribute('cy', Y(y));
+    guideH.setAttribute('x1', G.tankR); guideH.setAttribute('x2', X(t));
+    guideH.setAttribute('y1', Y(y)); guideH.setAttribute('y2', Y(y));
+    guideV.setAttribute('x1', X(t)); guideV.setAttribute('x2', X(t));
+    guideV.setAttribute('y1', Y(y)); guideV.setAttribute('y2', Y(0));
+    readout.textContent = `x=${fmtT(t)}  y=${fmt(y)}`;
+
+    // かたむきの三角（x=1→2 の区間。線がそこまで描かれたら出す）
+    if (t >= 2){
+      const x1 = X(1), x2 = X(2), y1 = Y(yOf(1)), y2 = Y(yOf(2));
+      slopeTri.setAttribute('d', `M${x1} ${y1} H${x2} V${y2}`);
+      slopeLbl.setAttribute('x', x2 + 3); slopeLbl.setAttribute('y', (y1 + y2) / 2 + 3.5);
+      slopeLbl.textContent = '+' + fmt(a);
+      slopeTri.style.display = slopeLbl.style.display = '';
+    } else { slopeTri.style.display = slopeLbl.style.display = 'none'; }
+
+    // くらべる線
+    if (S.ghost){
+      const g = S.ghost;
+      ghostLine.setAttribute('x1', X(0)); ghostLine.setAttribute('y1', Y(g.b));
+      ghostLine.setAttribute('x2', X(G.Xmax)); ghostLine.setAttribute('y2', Y(yOf(G.Xmax, g.a, g.b)));
+      ghostLbl.textContent = '前：' + formulaText(g.a, g.b);
+      const ge = yOf(G.Xmax, g.a, g.b);
+      ghostLbl.setAttribute('x', X(G.Xmax) - 2); ghostLbl.setAttribute('text-anchor', 'end');
+      ghostLbl.setAttribute('y', Math.max(Y(G.Ymax) + 22, Y(ge) + 13));
+      ghostLine.style.display = ghostLbl.style.display = '';
+    } else { ghostLine.style.display = ghostLbl.style.display = 'none'; }
+
+    // 表
+    const now = Math.floor(t + 1e-9);
+    cellsY.forEach((c, x) => {
+      c.textContent = fmt(yOf(x));
+      c.classList.toggle('now', x === now);
+      c.classList.toggle('future', x > t + 1e-9);
+      cellsX[x].classList.toggle('now', x === now);
+      cellsX[x].classList.toggle('future', x > t + 1e-9);
+    });
+    $('rate').innerHTML = `x が 1 ふえると、y は いつも <b>+${fmt(a)}</b> cm（変化の割合 ＝ a）`;
+
+    // 式
+    $('formula').innerHTML = formulaHTML(a, b);
+    $('subst').innerHTML = `x = ${fmtT(t)} のとき<br>y = <span class="ca">${fmt(a)}</span> × ${fmtT(t)}` +
+      (b ? ` + <span class="cb">${fmt(b)}</span>` : '') + ` = <span class="y" id="yNow">${fmt(y)}</span>`;
+    $('fnote').innerHTML = b === 0
+      ? '<span class="tagp">比例</span>b = 0 なので、y は x に<b>比例</b>しています。x が 2倍・3倍になると、y も 2倍・3倍。'
+      : '<span class="tagp">一次関数</span>a = 1分で上がる高さ（かたむき）、b = 最初の水（グラフが y じくと交わる所＝切片）';
+
+    // 時間・値
+    $('tv').textContent = `x = ${fmtT(t)} 分`;
+    $('tR').value = t;
+    $('aV').innerHTML = `<span style="color:#B87516">${fmt(a)}</span> cm`;
+    $('bV').innerHTML = `<span style="color:#2F7BB0">${fmt(b)}</span> cm`;
+    $('aR').value = a; $('bR').value = b;
+    $('btnPlay').textContent = S.playing ? '❚❚ とめる' : (t >= G.Xmax ? '↺ もう一度' : '▶ 再生');
+    $('btnGhost').disabled = !S.ghost;
+  }
+  function formulaText(a, b){ return `y=${a === 1 ? '' : fmt(a)}x${b ? '+' + fmt(b) : ''}`; }
+  function formulaHTML(a, b){
+    return `y = <span class="ca" id="fa">${fmt(a)}</span>x` + (b ? ` + <span class="cb" id="fb">${fmt(b)}</span>` : '');
+  }
+
+  /* ---------- 再生 ---------- */
+  let last = 0, onEnd = null;
+  const SPEED = 1.25;  // 1秒で何分すすむか
+  function play(){
+    if (S.t >= G.Xmax) S.t = 0;
+    S.playing = true; last = performance.now();
+    requestAnimationFrame(step); render();
+  }
+  function pause(){ S.playing = false; render(); }
+  function step(now){
+    if (!S.playing) return;
+    const dt = Math.min(0.1, (now - last) / 1000); last = now;
+    S.t = Math.min(G.Xmax, S.t + dt * SPEED);
+    if (S.t >= G.Xmax){ S.playing = false; render(); if (onEnd){ const f = onEnd; onEnd = null; f(); } return; }
+    render(); requestAnimationFrame(step);
+  }
+  $('btnPlay').addEventListener('click', () => S.playing ? pause() : play());
+  $('btnReset').addEventListener('click', () => { S.playing = false; S.t = 0; render(); });
+  $('tR').addEventListener('input', e => { S.playing = false; onEnd = null; S.t = +e.target.value; render(); });
+
+  /* ---------- a・b を変える（指をはなす前の線を「くらべる線」に残す） ---------- */
+  let committed = {a: S.a, b: S.b}, dragging = false;
+  function onParam(key, v){
+    if (!dragging){ dragging = true; S.ghost = {...committed}; }
+    S[key] = v; render();
+  }
+  function commit(){
+    dragging = false;
+    if (S.ghost && S.ghost.a === S.a && S.ghost.b === S.b) S.ghost = null;
+    committed = {a: S.a, b: S.b}; render();
+  }
+  ['aR', 'bR'].forEach(id => {
+    const key = id[0];
+    $(id).addEventListener('input', e => onParam(key, +e.target.value));
+    $(id).addEventListener('change', commit);
+  });
+  $('btnGhost').addEventListener('click', () => { S.ghost = null; render(); });
+
+  /* ---------- ミッション ---------- */
+  const MISSIONS = [
+    { q: '水を 2倍の速さで入れたら、グラフはどうなる？',
+      base: {a: 2, b: 6}, next: {a: 4, b: 6},
+      set: 'いまは「1分で 2cm 上がる」「最初に 6cm 入っている」水そうです。',
+      choices: ['線のかたむきが急になる', '線がそのまま上に平行にずれる', '線は変わらない'],
+      answer: 0,
+      explain: 'a（1分で上がる高さ）が 2 → 4 になりました。グラフのかたむきは a で決まるので、急になります。b＝6 は変わらないので、y じくと交わる点は同じです。' },
+    { q: '最初から入っている水を 6cm → 16cm にしたら、グラフはどうなる？',
+      base: {a: 2, b: 6}, next: {a: 2, b: 16},
+      set: '水を入れる速さ（1分で 2cm）は、そのままです。',
+      choices: ['線のかたむきが急になる', '線がそのまま上に平行にずれる', '線が原点を通るようになる'],
+      answer: 1,
+      explain: 'b（切片）が 10 ふえたので、どの時間でも水面は 10cm 高くなります。かたむき a＝2 は同じなので、線は平行に上へずれます。' },
+    { q: '最初の水を 0 にすると、グラフはどこを通る？',
+      base: {a: 3, b: 9}, next: {a: 3, b: 0},
+      set: 'いまは y = 3x + 9 です。最初の水 b を 9 → 0 にします。',
+      choices: ['原点 O（0, 0）を通る', 'y じくの 9 の所を通る', 'x じくの 3 の所を通る'],
+      answer: 0,
+      explain: 'b＝0 だと y = 3x。x＝0 のとき y＝0 なので原点を通ります。これが「比例」。比例は、一次関数の b＝0 の場合です。' }
+  ];
+  const done = new Set();
+  let cur = -1, picked = -1;
+  function drawChips(){
+    $('mchips').innerHTML = '';
+    MISSIONS.forEach((m, i) => {
+      const bt = document.createElement('button');
+      bt.className = 'mchip' + (i === cur ? ' active' : '') + (done.has(i) ? ' done' : '');
+      bt.textContent = '①②③④⑤'[i];
+      bt.setAttribute('aria-label', 'ミッション' + (i + 1));
+      bt.addEventListener('click', () => openMission(i));
+      $('mchips').appendChild(bt);
+    });
+  }
+  function openMission(i){
+    cur = i; picked = -1; onEnd = null;
+    const m = MISSIONS[i];
+    S.playing = false; S.a = m.base.a; S.b = m.base.b; S.t = G.Xmax; S.ghost = null;
+    committed = {...m.base};
+    $('mbody').classList.remove('hidden');
+    $('mq').textContent = m.q;
+    $('mset').textContent = m.set + ' まず予想をえらぼう。';
+    $('mresult').classList.add('hidden');
+    $('mcheck').disabled = true;
+    $('mchoices').innerHTML = '';
+    m.choices.forEach((c, k) => {
+      const bt = document.createElement('button');
+      bt.className = 'choice'; bt.textContent = 'ABC'[k] + '　' + c;
+      bt.addEventListener('click', () => {
+        picked = k;
+        [...$('mchoices').children].forEach((x, j) => x.classList.toggle('picked', j === k));
+        $('mcheck').disabled = false;
+      });
+      $('mchoices').appendChild(bt);
+    });
+    drawChips(); render();
+  }
+  $('mcheck').addEventListener('click', () => {
+    if (picked < 0) return;
+    const m = MISSIONS[cur];
+    [...$('mchoices').children].forEach(x => x.disabled = true);
+    $('mcheck').disabled = true;
+    S.ghost = {...m.base}; S.a = m.next.a; S.b = m.next.b; committed = {...m.next};
+    S.t = 0;
+    onEnd = () => showResult();
+    play();
+    document.querySelector('.stage').scrollIntoView({behavior: 'smooth', block: 'nearest'});
+  });
+  function showResult(){
+    const m = MISSIONS[cur], ok = picked === m.answer;
+    [...$('mchoices').children].forEach((x, j) => x.classList.toggle('right', j === m.answer));
+    done.add(cur); drawChips();
+    const r = $('mresult');
+    r.innerHTML = `<b>${ok ? '予想どおり！' : '予想とちがった！'}</b>　答えは ${'ABC'[m.answer]}。<br>${m.explain}`;
+    r.classList.remove('hidden');
+  }
+  $('mclose').addEventListener('click', () => { cur = -1; onEnd = null; $('mbody').classList.add('hidden'); drawChips(); });
+
+  /* ---------- テスト用の窓口 ---------- */
+  window.__FL = {
+    VERSION, G, S,
+    set(o){ S.playing = false; Object.assign(S, o); committed = {a: S.a, b: S.b}; render(); },
+    openMission, setChapter
+  };
+
+  drawChips();
+  setChapter(1);
+  render();
+})();
+</script>
+</body>
+</html>

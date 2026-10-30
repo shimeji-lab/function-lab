@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><title>関数LAB 自動テスト</title></head>
+<body>
+<pre id="out">running...</pre>
+<iframe id="f" src="index.html" style="width:400px;height:900px"></iframe>
+<script>
+// 表・式・グラフ・水面が同じ値を指しているかを調べる自動テスト
+document.getElementById('f').addEventListener('load', () => {
+  const w = document.getElementById('f').contentWindow, d = w.document, FL = w.__FL, G = FL.G;
+  const res = []; let pass = 0, fail = 0;
+  const near = (p, q, e = 0.011) => Math.abs(p - q) < e;
+  const ok = (cond, msg) => { cond ? pass++ : (fail++, res.push('NG ' + msg)); };
+  const num = s => parseFloat(String(s).replace(/[^0-9.\-]/g, ''));
+
+  const cases = [];
+  for (const a of [0.5, 1, 2, 3.5, 5]) for (const b of [0, 6, 13, 20]) for (const t of [0, 1, 2.5, 3.7, 7, 10]) cases.push({a, b, t});
+  for (const c of cases){
+    FL.set(c);
+    const y = c.a * c.t + c.b, tag = JSON.stringify(c);
+    // 式
+    ok(near(num(d.getElementById('fa').textContent), c.a), tag + ' 式のa');
+    const fb = d.getElementById('fb');
+    ok(c.b === 0 ? !fb : fb && near(num(fb.textContent), c.b), tag + ' 式のb');
+    ok(near(num(d.getElementById('yNow').textContent), y), tag + ' 代入した y');
+    // 表（光っている列）
+    const nowY = d.querySelector('#tbl tr:nth-child(2) td.now');
+    const nowX = d.querySelector('#tbl tr:nth-child(1) td.now');
+    const fx = Math.floor(c.t + 1e-9);
+    ok(nowX && +nowX.textContent === fx, tag + ' 表の光るx');
+    ok(nowY && near(num(nowY.textContent), c.a * fx + c.b), tag + ' 表の光るy');
+    d.querySelectorAll('#tbl tr:nth-child(2) td').forEach((td, x) => ok(near(num(td.textContent), c.a * x + c.b), tag + ' 表 x=' + x));
+    // グラフの点
+    const dot = d.getElementById('dot');
+    ok(near((+dot.getAttribute('cx') - G.x0) / G.px, c.t), tag + ' 点のx');
+    ok(near((G.y0 - +dot.getAttribute('cy')) / G.py, y), tag + ' 点のy');
+    const ln = d.getElementById('line');
+    ok(near(+ln.getAttribute('x2'), +dot.getAttribute('cx')) && near(+ln.getAttribute('y2'), +dot.getAttribute('cy')), tag + ' 線の先＝点');
+    ok(near((G.y0 - +ln.getAttribute('y1')) / G.py, c.b), tag + ' 線の始まり＝切片');
+    // 水面
+    const wt = d.getElementById('water');
+    ok(near((G.y0 - +wt.getAttribute('y')) / G.py, y), tag + ' 水面の高さ');
+    // 右上の表示
+    const ro = d.getElementById('readout').textContent.match(/x=([\d.]+)\s+y=([\d.]+)/);
+    ok(ro && near(+ro[1], c.t) && near(+ro[2], y), tag + ' グラフの数値表示');
+  }
+
+  // ミッション①：予想→確かめる で a が2倍、前の線が残る
+  FL.openMission(0);
+  d.querySelector('#mchoices .choice').click();
+  d.getElementById('mcheck').click();
+  ok(FL.S.a === 4 && FL.S.b === 6 && FL.S.ghost && FL.S.ghost.a === 2, 'ミッション①の切り替え');
+  FL.S.t = 9.995;
+  setTimeout(() => {
+    ok(!d.getElementById('mresult').classList.contains('hidden') && /答えは A/.test(d.getElementById('mresult').textContent), 'ミッション①の結果表示');
+    ok(d.querySelector('.mchip.done'), 'ミッション①に✓');
+    finish();
+  }, 3000);
+  function finish(){
+  // 準備中の章
+  FL.setChapter(3);
+  ok(d.getElementById('ch1').classList.contains('hidden') && !d.getElementById('chSoon').classList.contains('hidden'), '章3は準備中');
+  FL.setChapter(1);
+  ok(/^v\d+\.\d+\.\d+$/.test(FL.VERSION), 'VERSION');
+
+  document.getElementById('out').textContent = `RESULT ${fail ? 'FAIL' : 'PASS'} pass=${pass} fail=${fail} (${FL.VERSION})\n` + res.slice(0, 30).join('\n');
+  document.title = fail ? 'FAIL' : 'PASS';
+  }
+});
+</script>
+</body></html>
